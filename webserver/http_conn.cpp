@@ -64,12 +64,12 @@ void http_conn::close_conn() {
 }
 
 bool http_conn::read() {
-    printf("read data all at once...");
+    printf("read data all at once...\n");
     return true;
 }
 
 bool http_conn::write() {
-    printf("write data all at once...");
+    printf("write data all at once...\n");
     return true;
 }
 
@@ -84,6 +84,6 @@ http_conn::~http_conn()
 // 由线程池的工作线程调用, 这是处理 HTTP 请求的入口函数
 void http_conn::process() {
     // 解析 HTTP 请求
-    printf("parse request, create response");
+    printf("parse request, create response\n");
     // 生成响应 (将数据放入响应报文中)
 }

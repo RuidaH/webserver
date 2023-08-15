@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
     while (true) {
       int num = epoll_wait(epollfd, events, MAX_EVENT_NUMBER, -1);
       if ((num < 0) && (errno != EINTR)) { // 产生信号中断
-        printf("Epoll Failure...");
+        printf("Epoll Failure...\n");
         break;
       }
 
