@@ -1,1 +1,41 @@
 #include "http_conn.h"
+
+// 添加文件描述符到 epoll 中
+void addfd(int epollfd, int fd, bool one_shot) {
+    epoll_event event;
+    event.data.fd = fd;
+    event.events = EPOLLIN | EPOLLRDHUP;
+
+    // 使用 one shot 之后， 每次事件被触发都需要重新注册
+    if (one_shot) {
+        event.events | EPOLLONESHOT;
+    }
+    epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &event);
+}
+
+// 从 epoll 中删除文件描述符
+void removefd(int epollfd, int fd) {
+    epoll_ctl(epollfd, EPOLL_CTL_DEL, fd, 0);
+    close(fd);
+}
+
+// 修改文件描述符, 重置 socket 上 EPOLLONESHOT 事件， 以确保下一次可读时， EPOLLIN 事件能被触发
+void modfd(int epollfd, int fd, int ev) {
+    epoll_event event;
+    event.data.fd = fd;
+    event.events = ev | EPOLLONESHOT | EPOLLRDHUP;
+    epoll_ctl(epollfd, EPOLL_CTL_MOD, fd, &event);
+}
+
+void http_conn::init(int sockfd, const sockaddr_in& addr) {
+    m_sockfd = sockfd;
+    m_address = addr;
+
+    // 设置端口复用
+    int reuse = 1;
+    setsockopt(m_sockfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
+
+    // 添加到 epoll 对象中
+    addfd(m_epollfd, sockfd, true);
+    m_user_count++; // 总用户数+1
+}
