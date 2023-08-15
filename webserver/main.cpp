@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <bits/socket.h>
+#include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <errno.h>
@@ -48,9 +48,9 @@ int main(int argc, char* argv[]) {
     // 模拟 proactor 的模式, 主线程负责数据的读写, 然后让子线程负责业务逻辑 (被封装成任务类)
     Threadpool<http_conn> *pool = NULL;
     try {
-      pool = new Threadpool<http_conn>;
+       pool = new Threadpool<http_conn>;
     } catch(...) {
-      exit(-1);
+       exit(-1);
     }
 
     // 创建一个数组用于保存所有的客户端信息

@@ -1,5 +1,8 @@
 #include "http_conn.h"
 
+int http_conn::m_epollfd = -1;
+int http_conn::m_user_count = 0;
+
 // 设置文件描述符非阻塞
 void setnonblocking(int fd) {
     int old_flag = fcntl(fd, F_GETFL);
@@ -68,6 +71,14 @@ bool http_conn::read() {
 bool http_conn::write() {
     printf("write data all at once...");
     return true;
+}
+
+http_conn::http_conn()
+{
+}
+
+http_conn::~http_conn()
+{
 }
 
 // 由线程池的工作线程调用, 这是处理 HTTP 请求的入口函数
