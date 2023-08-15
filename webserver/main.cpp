@@ -99,6 +99,7 @@ int main(int argc, char* argv[]) {
       for (int i =0; i < num; ++i) {
         int sockfd = events[i].data.fd;
         if (sockfd == listen_fd) {
+
           // 有客户端连接进来
           struct sockaddr_in client_address;
           socklen_t client_addrlen = sizeof(client_address);
@@ -113,9 +114,38 @@ int main(int argc, char* argv[]) {
 
           // 给新的客户端初始化，放到数组中
           users[conn_fd].init(conn_fd, client_address);
+
+        } else if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) {
+
+          // 队伍异常断开或者错误等事件, 需要关闭连接
+          users[sockfd].close_conn();
+
+        } else if (events[i].events & EPOLLIN) {
+
+          // 读事件: 一次性把所有的事件都读出来
+          if (users[sockfd].read()) {
+            // 把业务逻辑交给线程池中的线程去执行
+            pool->append(users + sockfd);
+          } else { // 读取失败
+            users[sockfd].close_conn();
+          }
+
+        } else if (events[i].events & EPOLLOUT) {
+
+          // 一次性写完所有的数据
+          if (!users[sockfd].write()) {
+            users[sockfd].close_conn();
+          }
+
         }
+
       }
+
     }
+    close(epollfd);
+    close(listen_fd);
+    delete[] users;
+    delete pool;
 
     return 0;
 }

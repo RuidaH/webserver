@@ -24,9 +24,12 @@ public:
 
     void process(); // 解析请求报文, 并且处理客户端请求, 最后封装客户端响应
     void init(int sockfd, const sockaddr_in& addr); // 初始化新的连接
+    void close_conn(); // 关闭连接
+    bool read();  // 非阻塞读 (因为你需要把所有的数据都读出来)
+    bool write(); // 非阻塞写 
 
-private:
-    int m_sockfd;          // 该 HTTP 连接的 socket 
+   private:
+    int m_sockfd;          // 该 HTTP 连接的 socket
     sockaddr_in m_address; // 通信的 socket 地址
 
 };
