@@ -8,6 +8,8 @@
 
 #include "locker.h"
 
+// 模版类的定义和实现需要放在一个文件中
+
 // 线程池类, 定位成模版类是为了代码的复用, 模版参数就是任务类
 template <typename T>
 class Threadpool {

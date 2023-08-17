@@ -36,7 +36,8 @@ void removefd(int epollfd, int fd) {
 void modfd(int epollfd, int fd, int ev) {
     epoll_event event;
     event.data.fd = fd;
-    event.events = ev | EPOLLONESHOT | EPOLLRDHUP;
+    // event.events = ev | EPOLLONESHOT | EPOLLRDHUP;
+    event.events = ev | EPOLLONESHOT | EPOLLET | EPOLLRDHUP;
     epoll_ctl(epollfd, EPOLL_CTL_MOD, fd, &event);
 }
 
@@ -64,7 +65,30 @@ void http_conn::close_conn() {
 }
 
 bool http_conn::read() {
-    printf("read data all at once...\n");
+    // printf("read data all at once...\n");
+
+    if (m_read_idx >= READ_BUFFER_SIZE) {
+        return false;
+    }
+
+    // 读取到的字节
+    int bytes_read = 0;
+    while (true) {
+        // 把 m_read_idx 之后的数据一次读取出来
+        bytes_read = recv(m_sockfd, m_read_buf + m_read_idx, READ_BUFFER_SIZE - m_read_idx, 0);
+        if (bytes_read == -1) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                // 没有数据
+                break;
+            }
+            return false;
+        } else if (bytes_read == 0) {
+            // 对方关闭连接
+            return false;
+        }
+        printf("Data read: %s\n", m_read_buf);
+        m_read_idx += bytes_read;
+    }
     return true;
 }
 
